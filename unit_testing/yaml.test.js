@@ -14,6 +14,7 @@ everything needed to create this script.
 const yaml = require('js-yaml'); // js-yaml helps us read yaml of files
 const fs = require('fs'); // fs is file system package
 const path = require('path');
+const fetch = require('node-fetch');
 // Use check-prop-types to turn PropTypes messages into errors
 const { assertPropTypes } = require('check-prop-types');
 // PropTypes of the documents are descibed in the formats.js file.
@@ -226,6 +227,18 @@ const checkFolder = (videoFormat, previousPath, folder) => describe(folder, () =
           expect(decodedYaml.contributions).toBeUndefined();
         }
       }
+    });
+
+    test('Has a valid web_editor', async function() {
+      if (!decodedYaml.web_editor) {
+        return;
+      }
+      const resp = await fetch(`https://editor.p5js.org/api/projects/${decodedYaml.web_editor}`);
+      const web_editor_version = await resp.json();
+      // Check that all web editor versions are on the right user
+      expect(web_editor_version.user.id).toBe('5b8578c76d67b5757e541f74');
+      // Check that the titles match up correctly
+      expect(web_editor_version.name).toBe(decodedYaml.title);
     });
   }));
 });
